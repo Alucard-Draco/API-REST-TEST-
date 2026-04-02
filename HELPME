@@ -1,0 +1,7 @@
+This a instruction to solve possible problems that i have encounter
+
+1. Common Problem Solving Error: "Java not found" Install Java 17+ and configure JAVA_HOME
+2. Error: "Maven not found" Install Maven and add to PATH
+3. Door 8080 occupied Change port in application.yml: server.port: 8081
+
+if i face any problems, i will solve them and update this file!
