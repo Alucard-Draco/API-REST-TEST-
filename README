@@ -1,0 +1,254 @@
+# User Management API
+
+API REST em Java com Spring Boot para gerenciamento de usuários com banco de dados.
+
+## Características
+
+- ✅ CRUD completo de usuários
+- ✅ Validação de dados com Bean Validation
+- ✅ Tratamento global de exceções
+- ✅ Paginação e ordenação
+- ✅ Busca por nome
+- ✅ Soft delete (ativar/desativar usuários)
+- ✅ Documentação Swagger/OpenAPI
+- ✅ Banco de dados H2 (em memória) e MySQL
+- ✅ DTOs para separar camadas
+- ✅ Transações com @Transactional
+
+## Tecnologias Utilizadas
+
+- **Java 17**
+- **Spring Boot 3.2.0**
+- **Spring Data JPA**
+- **Spring Web**
+- **Bean Validation**
+- **H2 Database** (desenvolvimento)
+- **MySQL** (produção)
+- **Swagger/OpenAPI**
+- **Maven**
+
+## Como Executar
+
+### Pré-requisitos
+- Java 17 ou superior
+- Maven 3.6+
+
+### Executando a aplicação
+```bash
+# Clonar o projeto
+git clone <url-do-repositorio>
+cd user-api
+
+# Compilar e executar
+mvn spring-boot:run
+
+# Ou compilar e executar o JAR
+mvn clean package
+java -jar target/user-api-1.0.0.jar
+```
+
+A aplicação estará disponível em: http://localhost:8080
+
+## Documentação da API
+
+### Swagger UI
+Acesse: http://localhost:8080/swagger-ui.html
+
+### Console H2 (desenvolvimento)
+Acesse: http://localhost:8080/h2-console
+- **JDBC URL**: jdbc:h2:mem:testdb
+- **Username**: sa
+- **Password**: password
+
+## Endpoints da API
+
+### Usuários
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | /api/users | Criar novo usuário |
+| GET | /api/users | Listar todos os usuários |
+| GET | /api/users/{id} | Buscar usuário por ID |
+| PUT | /api/users/{id} | Atualizar usuário |
+| DELETE | /api/users/{id} | Excluir usuário |
+| GET | /api/users/active | Listar usuários ativos |
+| GET | /api/users/paginated | Listar com paginação |
+| GET | /api/users/search?nome={nome} | Buscar por nome |
+| PATCH | /api/users/{id}/activate | Ativar usuário |
+| PATCH | /api/users/{id}/deactivate | Desativar usuário |
+| GET | /api/users/stats | Estatísticas dos usuários |
+
+### Exemplos de Uso
+
+#### Criar usuário
+```bash
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João Silva",
+    "email": "joao@email.com",
+    "senha": "123456"
+  }'
+```
+
+#### Listar usuários com paginação
+```bash
+curl "http://localhost:8080/api/users/paginated?page=0&size=5&sortBy=nome&sortDirection=asc"
+```
+
+#### Buscar usuários por nome
+```bash
+curl "http://localhost:8080/api/users/search?nome=João"
+```
+
+#### Atualizar usuário
+```bash
+curl -X PUT http://localhost:8080/api/users/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João Santos",
+    "email": "joao.santos@email.com"
+  }'
+```
+
+### DTOs
+
+#### UserCreateDTO
+```json
+{
+  "nome": "string (2-100 chars, obrigatório)",
+  "email": "string (formato email válido, obrigatório)",
+  "senha": "string (mínimo 6 chars, obrigatório)"
+}
+```
+
+#### UserUpdateDTO
+```json
+{
+  "nome": "string (2-100 chars, opcional)",
+  "email": "string (formato email válido, opcional)",
+  "senha": "string (mínimo 6 chars, opcional)"
+}
+```
+
+#### UserResponseDTO
+```json
+{
+  "id": "number",
+  "nome": "string",
+  "email": "string",
+  "dataCriacao": "datetime",
+  "dataAtualizacao": "datetime",
+  "ativo": "boolean"
+}
+```
+
+## Configuração do Banco de Dados
+
+### H2 (Desenvolvimento - Padrão)
+```yaml
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+```
+
+### MySQL (Produção)
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/userdb?useSSL=false&serverTimezone=UTC
+    username: root
+    password: senha
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+```
+
+## Tratamento de Erros
+
+A API retorna erros padronizados:
+
+### Erro de validação (400)
+```json
+{
+  "status": 400,
+  "message": "Erro de validação",
+  "errors": {
+    "nome": "Nome é obrigatório",
+    "email": "Email deve ter formato válido"
+  },
+  "timestamp": "2024-01-15T10:30:00"
+}
+```
+
+### Recurso não encontrado (404)
+```json
+{
+  "status": 404,
+  "message": "Usuário não encontrado com ID: 999",
+  "timestamp": "2024-01-15T10:30:00"
+}
+```
+
+### Email duplicado (400)
+```json
+{
+  "status": 400,
+  "message": "Email já está em uso: joao@email.com",
+  "timestamp": "2024-01-15T10:30:00"
+}
+```
+
+## Estrutura do Projeto
+
+```
+src/
+├── main/
+│   ├── java/com/example/userapi/
+│   │   ├── UserApiApplication.java      # Classe principal
+│   │   ├── config/                      # Configurações
+│   │   │   ├── DataInitializer.java     # Dados iniciais
+│   │   │   └── SwaggerConfig.java       # Config Swagger
+│   │   ├── controller/                  # Controllers REST
+│   │   │   └── UserController.java      # Endpoints de usuário
+│   │   ├── dto/                         # Data Transfer Objects
+│   │   │   ├── UserCreateDTO.java       # DTO criação
+│   │   │   ├── UserResponseDTO.java     # DTO resposta
+│   │   │   └── UserUpdateDTO.java       # DTO atualização
+│   │   ├── exception/                   # Exceções customizadas
+│   │   │   ├── EmailAlreadyExistsException.java
+│   │   │   ├── GlobalExceptionHandler.java
+│   │   │   └── ResourceNotFoundException.java
+│   │   ├── model/                       # Entidades JPA
+│   │   │   └── User.java                # Entidade usuário
+│   │   ├── repository/                  # Repositórios JPA
+│   │   │   └── UserRepository.java      # Repo usuário
+│   │   └── service/                     # Camada de serviço
+│   │       └── UserService.java         # Lógica de negócio
+│   └── resources/
+│       └── application.yml              # Configurações
+└── test/                               # Testes (a implementar)
+```
+
+## Próximos Passos
+
+- [ ] Implementar autenticação JWT
+- [ ] Adicionar testes unitários e de integração
+- [ ] Implementar cache com Redis
+- [ ] Adicionar logs estruturados
+- [ ] Implementar rate limiting
+- [ ] Adicionar métricas com Actuator
+- [ ] Dockerizar a aplicação
+
+## Contribuição
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -am 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
